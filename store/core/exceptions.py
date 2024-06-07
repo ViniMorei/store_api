@@ -8,3 +8,6 @@ class BaseException(Exception):
 
 class NotFoundException(BaseException):
     message = "Not Found"
+
+class InsertionException(BaseException):
+    message = "Error inserting data into the database"

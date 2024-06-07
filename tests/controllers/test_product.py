@@ -100,3 +100,18 @@ async def test_controller_delete_should_return_not_found(client, products_url):
     assert response.json() == {
         "detail": "Product not found with filter: 4fd7cd35-a3a0-4c1f-a78d-d24aa81e7dca"
     }
+
+async def test_controller_create_should_return_insertion_error(client, products_url, mocker):
+    mocker.patch('store.usecases.product.ProductUsecase.create', side_effect=InsertionException())
+    response = await client.post(products_url, json=product_data())
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert response.json() == {"detail": "Error inserting data into the database"}
+
+
+async def test_controller_query_should_return_filtered_products(client, products_url):
+    response = await client.get(products_url, params={"min_price": 5000, "max_price": 8000})
+
+    assert response.status_code == status.HTTP_200_OK
+    products = response.json()
+    assert all(5000 <= product["price"] <= 8000 for product in products)
